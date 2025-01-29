@@ -32,6 +32,7 @@ jobs:
         run: dotnet workload install aspire
 
       - name: Log in with Azure (Federated Credentials)
+        working-directory: ${{ github.workspace }}/jarvis.AppHost
         run: |
           azd auth login `
             --client-id "$Env:AZURE_CLIENT_ID" `
@@ -41,9 +42,11 @@ jobs:
 
 
       - name: Provision Infrastructure
+        working-directory: ${{ github.workspace }}/jarvis.AppHost
         run: azd provision --no-prompt
         env:
           AZD_INITIAL_ENVIRONMENT_CONFIG: ${{ secrets.AZD_INITIAL_ENVIRONMENT_CONFIG }}
 
       - name: Deploy Application
+        working-directory: ${{ github.workspace }}/jarvis.AppHost
         run: azd deploy --no-prompt
