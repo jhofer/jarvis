@@ -3,6 +3,9 @@ using jarvis.Web.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+
+
 // Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
 builder.AddRedisOutputCache("cache");
@@ -11,7 +14,10 @@ builder.AddRedisOutputCache("cache");
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddHttpClient<WeatherApiClient>(client =>
+builder.Services.AddScoped<IntegrationsApiClient>();
+builder.Services.AddScoped<WeatherApiClient>();
+
+builder.Services.AddHttpClient("apiService", client =>
     {
         // This URL uses "https+http://" to indicate HTTPS is preferred over HTTP.
         // Learn more about service discovery scheme resolution at https://aka.ms/dotnet/sdschemes.

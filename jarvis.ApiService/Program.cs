@@ -1,12 +1,29 @@
+using Microsoft.AspNetCore.OpenApi;
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 // Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
-
+builder.AddAzureOpenAIClient("openAiConnection");
+builder.AddAzureTableClient("tables");
 // Add services to the container.
 builder.Services.AddProblemDetails();
 
+builder.Services.AddControllers();
+
+
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(options => // UseSwaggerUI is called only in Development.
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+        options.RoutePrefix = string.Empty;
+    });
+}
 
 // Configure the HTTP request pipeline.
 app.UseExceptionHandler();
@@ -28,6 +45,8 @@ app.MapGet("/weatherforecast", () =>
 .WithName("GetWeatherForecast");
 
 app.MapDefaultEndpoints();
+
+app.MapControllers();
 
 app.Run();
 

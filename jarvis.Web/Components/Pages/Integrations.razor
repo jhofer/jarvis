@@ -1,0 +1,25 @@
+﻿@page "/integrations"
+@attribute [StreamRendering(true)]
+@* @rendermode InteractiveServer *@
+
+@inject IntegrationsApiClient IntegrationsApi
+
+<PageTitle>Integrations</PageTitle>
+
+<h1>Integrations</h1>
+
+<p role="status">AuthLink @authLink</p>
+
+<a class="btn btn-primary" href="@authLink">Add OneDriveIntegration</a>
+
+@code {
+
+    private string authLink = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        authLink = await IntegrationsApi.GenerateAuthLink();
+    }
+
+}
+

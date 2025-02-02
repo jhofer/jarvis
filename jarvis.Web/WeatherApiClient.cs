@@ -1,9 +1,11 @@
 namespace jarvis.Web;
 
-public class WeatherApiClient(HttpClient httpClient)
+public class WeatherApiClient(IHttpClientFactory httpClientFactory)
 {
     public async Task<WeatherForecast[]> GetWeatherAsync(int maxItems = 10, CancellationToken cancellationToken = default)
     {
+        var httpClient = httpClientFactory.CreateClient("apiService");
+
         List<WeatherForecast>? forecasts = null;
 
         await foreach (var forecast in httpClient.GetFromJsonAsAsyncEnumerable<WeatherForecast>("/weatherforecast", cancellationToken))
