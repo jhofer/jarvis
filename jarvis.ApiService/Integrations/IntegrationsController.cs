@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 
 namespace jarvis.ApiService.Integrations
 {
@@ -20,11 +21,13 @@ namespace jarvis.ApiService.Integrations
     {
 
         private readonly ILogger<IntegrationsController> _logger;
+        private readonly IConfiguration configuration;
         private string codeVerifier;
 
-        public IntegrationsController(ILogger<IntegrationsController> logger)
+        public IntegrationsController(ILogger<IntegrationsController> logger, IConfiguration configuration)
         {
             _logger = logger;
+            this.configuration = configuration;
         }
 
         [HttpGet("GenerateAuthLink")]
@@ -32,7 +35,7 @@ namespace jarvis.ApiService.Integrations
         public RedirectResult GenerateAuthLink()
         {
 
-            string clientId = Environment.GetEnvironmentVariable("CLIENT_ID");
+            string clientId = this.configuration["CLIENT_ID"];
 
             codeVerifier = PkceHelper.GenerateCodeVerifier();
             string codeChallenge = PkceHelper.GenerateCodeChallenge(codeVerifier);
