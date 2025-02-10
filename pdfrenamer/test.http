@@ -1,0 +1,2 @@
+# Login
+GET  http://localhost:7265/api/GenerateAuthLink

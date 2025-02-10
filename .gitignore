@@ -145,3 +145,5 @@ node_modules/
 
 # Python virtual environments
 .venv
+
+**/local.settings.json'
