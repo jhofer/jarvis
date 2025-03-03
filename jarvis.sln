@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35707.178 d17.12
+VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jarvis.AppHost", "jarvis.AppHost\jarvis.AppHost.csproj", "{8B9387A2-3ACC-4E03-BB8A-5BCE13477C83}"
 EndProject
@@ -11,6 +11,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jarvis.Web", "jarvis.Web\jarvis.Web.csproj", "{340E4BBE-7181-4E7E-9A6A-60FCC7A508D0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jarvis.Tests", "jarvis.Tests\jarvis.Tests.csproj", "{E920055C-6F25-4CF2-BE3D-3D8CC10BBB9F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDFRenamerIsolated", "pdfrenamer\PDFRenamerIsolated.csproj", "{87B4AD4A-E46C-4F55-9F71-9DC4751E76F3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,6 +40,10 @@ Global
 		{E920055C-6F25-4CF2-BE3D-3D8CC10BBB9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E920055C-6F25-4CF2-BE3D-3D8CC10BBB9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E920055C-6F25-4CF2-BE3D-3D8CC10BBB9F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{87B4AD4A-E46C-4F55-9F71-9DC4751E76F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87B4AD4A-E46C-4F55-9F71-9DC4751E76F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87B4AD4A-E46C-4F55-9F71-9DC4751E76F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87B4AD4A-E46C-4F55-9F71-9DC4751E76F3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

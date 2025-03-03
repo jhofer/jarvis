@@ -8,8 +8,11 @@ namespace jarvis.ApiService
         public static void AddAppServices(this IServiceCollection services)
         {
             services
-                .AddSingleton<IAccessRepository, StorageAccessRepository>()
-                .AddSingleton<ITokenProvider, TokenProvider>();
+                .AddSingleton<IIntegrationRepository, IntegrationRepository>()
+                .AddSingleton<ITokenProvider, TokenProvider>()
+                .AddSingleton<IAccessTokenCache, AccessTokenCache>()
+                .AddSingleton<>
+
             /*.AddSingleton<IOneDrive, OneDrive>()
             .AddSingleton<ICache, Cache>()
             .AddSingleton<IAI, AI>();*/

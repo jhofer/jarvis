@@ -16,9 +16,11 @@ builder.Services.AddProblemDetails();
 
 builder.Services.AddControllers();
 
-
+builder.AddRedisClient(connectionName: "cache");
 builder.Services.AddAppServices();
 
+builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+       .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"));
 
 
 /*builder
@@ -51,8 +53,6 @@ app.MapDefaultEndpoints();
 
 app.MapControllers();
 
-builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-       .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"));
 //app.UseAuthorization();
 
 app.Run();

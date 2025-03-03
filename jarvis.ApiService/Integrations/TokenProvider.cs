@@ -1,14 +1,6 @@
-﻿using Azure.Core;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using PDFRenamer;
-using PDFRenamer.Services;
-using System;
-using System.Collections.Generic;
+﻿using StackExchange.Redis;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Text.Json;
 
 namespace jarvis.ApiService.Integrations
 {
@@ -21,28 +13,29 @@ namespace jarvis.ApiService.Integrations
 
     public interface ITokenProvider
     {
-        Task<string> GetAccessToken(string userId);
+        Task<string> GetAccessToken(string userId, IntegrationType integrationType);
 
-        public Task<TokenResponse> GetNewAccessToken(string refreshToken);
+
     }
 
     public class TokenProvider : ITokenProvider
     {
         private readonly ILogger logger;
         private readonly IHttpClientFactory httpClientFactory;
-        private readonly IAccessRepository accessRepo;
+        private readonly IIntegrationRepository accessRepo;
+        private readonly IAccessTokenCache cache;
 
-        private readonly Dictionary<string, TokenResponse> tokenRepsonses = new Dictionary<string, TokenResponse>();
 
-        public TokenProvider(ILogger<TokenProvider> logger, IHttpClientFactory httpClientFactory, IAccessRepository accessRepo)
+        public TokenProvider(ILogger<TokenProvider> logger, IHttpClientFactory httpClientFactory, IIntegrationRepository accessRepo, IAccessTokenCache cache)
         {
             this.logger = logger;
             this.httpClientFactory = httpClientFactory;
             this.accessRepo = accessRepo;
+            this.cache = cache;
         }
 
 
-        public JwtSecurityToken? ToToken(string accessToken)
+        private JwtSecurityToken? ToToken(string accessToken)
         {
             var handler = new JwtSecurityTokenHandler();
 
@@ -55,40 +48,38 @@ namespace jarvis.ApiService.Integrations
             return token;
         }
 
-        public async Task<string> GetAccessToken(string userId)
+        public async Task<string> GetAccessToken(string userId, IntegrationType integrationType)
         {
 
             string validToken = null;
-            if (tokenRepsonses.TryGetValue(userId, out var tokens))
-            {
-                // chekc if token.access_token still valid;
-                // if not, get new token with token.refresh_token
 
-                var accessToken = ToToken(tokens.access_token);
-                var refreshToken = tokens.refresh_token;
-                if (accessToken?.ValidTo > DateTime.UtcNow.AddMinutes(1))
+            if (cache.TryGetAccessToken(userId, integrationType, out var accessToken))
+            {
+                if (accessRepo.TryGetRefreshToken(userId, out string refreshToken))
                 {
-                    logger.LogInformation("Access Token still valid");
-                    validToken = tokens.access_token;
+                    var newAccessToken = await GetNewAccessToken(userId, integrationType);
+
                 }
                 else
                 {
-                    logger.LogInformation("Access Token expired, refreshing token");
-                    try
-                    {
-
-                        var newAccessToken = await GetNewAccessToken(tokens.refresh_token);
-                        tokenRepsonses[userId] = newAccessToken;
-                        accessRepo.SaveRefreshToken(userId, newAccessToken.refresh_token);
-                        validToken = newAccessToken.access_token;
-                    }
-                    catch (Exception e)
-                    {
-                        logger.LogError("Refresh Token expired");
-                        throw;
-                    }
 
                 }
+              
+
+
+              
+                var refreshToken = newAccessToken.refresh_token;
+                var accessToken = newAccessToken.access_token;
+
+
+                accessRepo.Update(userId, integrationType, refreshToken);
+
+                tokenRepsonses[userId] = newAccessToken;
+                //accessRepo.SaveRefreshToken(userId, newAccessToken.refresh_token);
+                validToken = newAccessToken.access_token;
+
+
+
             }
             else if (accessRepo.TryGetRefreshToken(userId, out string refreshToken))
             {
@@ -122,7 +113,7 @@ namespace jarvis.ApiService.Integrations
             }
         }
 
-        public async Task<TokenResponse> GetNewAccessToken(string refreshToken)
+        public async Task<TokenResponse> GetNewAccessToken(string refreshToken, IntegrationType integrationType)
         {
             var tokenEndpoint = "https://login.microsoftonline.com/common/oauth2/v2.0/token";
             var client = httpClientFactory.CreateClient("tokenEndpoint");
@@ -138,7 +129,7 @@ namespace jarvis.ApiService.Integrations
             var response = await client.PostAsync(tokenEndpoint, requestData);
             var responseBody = await response.Content.ReadAsStringAsync();
 
-            var repsonse = JsonConvert.DeserializeObject<TokenResponse>(responseBody);
+            var repsonse = JsonSerializer.Deserialize<TokenResponse>(responseBody);
             if (response == null)
             {
                 throw new Exception("Failed to refresh token");

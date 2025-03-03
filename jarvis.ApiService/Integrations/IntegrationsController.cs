@@ -3,18 +3,25 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System.Net.Http;
 using System.Net;
+using System.Text.Json;
+using StackExchange.Redis;
+using System.Text.Json.Serialization;
+using jarvis.ApiService.Cache;
+
 
 namespace jarvis.ApiService.Integrations
 {
 
-    public class Integration
-    {
-        public string Id { get; set; }
-        public string UserId { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public string RefreshToken { get; set; }
-    }
+
+    public record IntegrationRequest(string SessionId,
+         string UserId,
+         string CodeVerifier,
+         string CodeChallange,
+         string Referer
+        )
+    { }
+
+
 
 
     [ApiController]
@@ -25,28 +32,44 @@ namespace jarvis.ApiService.Integrations
         private readonly ILogger<IntegrationsController> logger;
         private readonly IConfiguration configuration;
         private readonly IHttpClientFactory httpClientFactory;
-        private string codeVerifier;
+        private readonly IConnectionMultiplexer connectionMultiplexer;
+        private readonly IDatabase cache;
+        private readonly IIntegrationRepository integrationRepository;
 
-        public IntegrationsController(ILogger<IntegrationsController> logger, IConfiguration configuration, IHttpClientFactory httpClienFactory)
+        public IntegrationsController(ILogger<IntegrationsController> logger, IConfiguration configuration, IHttpClientFactory httpClienFactory, IConnectionMultiplexer connectionMux, IIntegrationRepository integrationRepository)
         {
             this.logger = logger;
             this.configuration = configuration;
             this.httpClientFactory = httpClienFactory;
+            this.connectionMultiplexer = connectionMux;
+            this.cache = connectionMultiplexer.GetDatabase();
+            this.integrationRepository = integrationRepository;
         }
 
         [HttpGet("GenerateAuthLink")]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
-        public RedirectResult GenerateAuthLink()
+        public RedirectResult GenerateAuthLink([FromHeader] string referer, [FromQuery] string userEmail)
         {
-
+            var sessionId = Guid.NewGuid().ToString();
             string? clientId = this.configuration["CLIENT_ID"];
             if (clientId is null) throw new ArgumentNullException("Config CLIENT_ID is null");
 
-            codeVerifier = PkceHelper.GenerateCodeVerifier();
+            var codeVerifier = PkceHelper.GenerateCodeVerifier();
+
             string codeChallenge = PkceHelper.GenerateCodeChallenge(codeVerifier);
 
+            var integrationRequest = new IntegrationRequest
+            (
+                SessionId: sessionId,
+                CodeVerifier: codeVerifier,
+                CodeChallange: codeChallenge,
+                Referer: referer,
+                UserId: userEmail
+            );
 
-            string redirectUri = GetRedirectUri();
+            this.cache.SetObject(sessionId, integrationRequest);
+
+            string redirectUri = GetRedirectUri(sessionId);
 
             string scope = "Files.ReadWrite offline_access";
 
@@ -64,41 +87,51 @@ namespace jarvis.ApiService.Integrations
 
             return rediretResult;
         }
-        private string GetRedirectUri()
+        private string GetRedirectUri(string sessionId)
         {
             var host = HttpContext.Request.Host;
             string hostUrl = $"{HttpContext.Request.Scheme}://{host.Host}:{host.Port}";
-            string redirectUri = $"{hostUrl}/api/ExchangeCodeForToken";
+            string redirectUri = $"{hostUrl}/Integrations/ExchangeCodeForToken?sessionId={sessionId}";
 
             logger.LogInformation($"Redirect URI: {redirectUri}");
             return redirectUri;
         }
+
         [HttpGet("ExchangeCodeForToken")]
+        [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<ActionResult> ExchangeCodeForToken(
-[FromQuery] string? code, [FromQuery] string? error, [FromQuery] string? error_description)
+         [FromQuery] string? code,
+         [FromQuery] string? error,
+         [FromQuery] string? error_description,
+         [FromQuery] string sessionId
+        )
         {
-            //http://localhost:7143/api/ExchangeCodeForToken?error=invalid_request&error_description=Proof%20Key%20for%20Code%20Exchange%20is%20required%20for%20cross-origin%20authorization%20code%20redemption.
+
 
             if (error is not null && code is null)
             {
                 return BadRequest(new { error, error_description });
             }
 
-            // string redirectUri = GetRedirectUri(req);
+            string redirectUri = GetRedirectUri(sessionId);
 
 
 
             var httpClient = httpClientFactory.CreateClient("tokenEndpoint");
 
-            string clientId = Environment.GetEnvironmentVariable("CLIENT_ID");
-            string clientSecret = Environment.GetEnvironmentVariable("CLIENT_SECRET");
+            string clientId = this.configuration["CLIENT_ID"];
+            string clientSecret = this.configuration["CLIENT_SECRET"];
             var tokenEndpoint = "https://login.microsoftonline.com/common/oauth2/v2.0/token";
+
+            var request = this.cache.ObjectGetDelete<IntegrationRequest>(sessionId);
+
+            var codeVerifier = request.CodeVerifier;
             var requestData = new FormUrlEncodedContent(new[]
             {
                 new KeyValuePair<string, string>("client_id", clientId),
                 new KeyValuePair<string, string>("client_secret", clientSecret),
                 new KeyValuePair<string, string>("code", code),
-                /*new KeyValuePair<string, string>("redirect_uri", redirectUri),*/
+                new KeyValuePair<string, string>("redirect_uri", redirectUri),
                 new KeyValuePair<string, string>("grant_type", "authorization_code"),
                 new KeyValuePair<string, string>("code_verifier", codeVerifier)
             });
@@ -107,33 +140,43 @@ namespace jarvis.ApiService.Integrations
 
             if (response.IsSuccessStatusCode)
             {
-                dynamic tokenData = JsonConvert.DeserializeObject<TokenResponse>(responseBody);
+                dynamic tokenData = JsonSerializer.Deserialize<TokenResponse>(responseBody);
                 string accessToken = tokenData.access_token;
                 string refreshToken = tokenData.refresh_token;
-                var bearerToken = await tokenProvider.GetNewAccessToken(refreshToken);
-                claimProvider.SetClaims(bearerToken.access_token);
-                string userId = claimProvider.UserId;
 
-                accessRepo.SaveRefreshToken(userId, refreshToken);
-                // Speichere Refresh Token sicher in Azure Key Vault oder einer Datenbank.
-                var newAccessToken = await tokenProvider.GetAccessToken(userId);
+                var integration = new Integration
+                {
+                    UserId = request.UserId,
+                    AppId = clientId,
+                    IntegrationName = "OneDrive",
+                    RefreshToken = refreshToken
+                };
 
-                var resp = req.CreateResponse();
-                resp.StatusCode = HttpStatusCode.OK;
-                await resp.WriteStringAsync(newAccessToken);
-                return resp;
+                integrationRepository.Save(integration);
+
+                var rediretResult = new RedirectResult(url: request.Referer + "/Integrations", permanent: true,
+                           preserveMethod: true);
+
+                return rediretResult;
 
             }
             else
             {
-                var resp = req.CreateResponse();
-                resp.StatusCode = HttpStatusCode.BadRequest;
-                await resp.WriteStringAsync(responseBody);
-                return resp;
+                return BadRequest();
 
             }
 
         }
+
+        [HttpGet("/")]
+        [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
+        public async Task<ActionResult> GetIntegrations()
+        {
+            var integerations = integrationRepository.GetIntegrations(request)
+
+        }
+
+
 
 
     }
