@@ -3,7 +3,7 @@ using Azure.Data.Tables;
 using Azure.Data.Tables.Models;
 using System.Collections.Concurrent;
 
-namespace jarvis.ApiService.Integrations
+namespace jarvis.ApiService.Integrations.Registration
 {
     public interface IIntegrationRepository
     {

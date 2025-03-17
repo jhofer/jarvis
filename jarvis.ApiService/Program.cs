@@ -50,7 +50,8 @@ app.UseExceptionHandler();
 
 
 app.MapDefaultEndpoints();
-
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 
 //app.UseAuthorization();

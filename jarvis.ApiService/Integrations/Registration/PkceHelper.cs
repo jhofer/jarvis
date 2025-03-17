@@ -2,7 +2,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace jarvis.ApiService.Integrations
+namespace jarvis.ApiService.Integrations.Registration
 {
 
 

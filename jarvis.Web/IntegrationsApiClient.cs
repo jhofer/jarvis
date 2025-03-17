@@ -9,6 +9,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Azure.Core;
 using Microsoft.Identity.Web;
+using System.Security.Claims;
 namespace jarvis.Web;
 
 public class IntegrationsApiClient
@@ -75,12 +76,15 @@ public class IntegrationsApiClient
 
     public string GenerateAuthLink()
     {
+        var ctx = httpContext.HttpContext! ?? throw new Exception("Http context not available");
+
+        var id = ctx.User?.Identity ?? throw new Exception("User context not available");
+        var userEmail =id.Name;
         var apiUrl = config["apiService"];
-        var userEmail = httpContext.HttpContext?.User.Identity.Name;
-        // current location
-        httpContext.HttpContext?.User.GetDisplayName();
-        var origin = "test";
-        var url = $"{apiUrl}/Integrations/GenerateAuthLink?origin={origin}&userEmail={userEmail}";
+      
+        var request = ctx.Request;
+        var referer = request.Headers.Referer;
+        var url = $"{apiUrl}/Integrations/GenerateAuthLink?referer={referer}";
         return url;
 
     }

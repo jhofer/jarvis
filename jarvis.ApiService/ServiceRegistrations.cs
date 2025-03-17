@@ -1,4 +1,5 @@
-﻿using jarvis.ApiService.Integrations;
+﻿using jarvis.ApiService.Integrations.IntegrationTokenProvider;
+using jarvis.ApiService.Integrations.Registration;
 using System.Runtime.CompilerServices;
 
 namespace jarvis.ApiService
@@ -10,15 +11,15 @@ namespace jarvis.ApiService
             services
                 .AddSingleton<IIntegrationRepository, IntegrationRepository>()
                 .AddSingleton<ITokenProvider, TokenProvider>()
-                .AddSingleton<IAccessTokenCache, AccessTokenCache>()
-                .AddSingleton<>
+                .AddSingleton<IAccessTokenCache, AccessTokenCache>();
+
 
             /*.AddSingleton<IOneDrive, OneDrive>()
             .AddSingleton<ICache, Cache>()
             .AddSingleton<IAI, AI>();*/
 
-          /*  services
-            .AddScoped<ClaimsProvider>();*/
+            /*  services
+              .AddScoped<ClaimsProvider>();*/
         }
     }
 }

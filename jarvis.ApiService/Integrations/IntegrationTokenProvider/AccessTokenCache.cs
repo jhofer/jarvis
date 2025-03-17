@@ -1,8 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using jarvis.ApiService.Integrations.Registration;
+using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 using System.IdentityModel.Tokens.Jwt;
 
-namespace jarvis.ApiService.Integrations
+namespace jarvis.ApiService.Integrations.IntegrationTokenProvider
 {
     public interface IAccessTokenCache
     {
@@ -16,7 +17,7 @@ namespace jarvis.ApiService.Integrations
 
         public AccessTokenCache(IConnectionMultiplexer connectionMux)
         {
-            this.cache = connectionMux.GetDatabase();
+            cache = connectionMux.GetDatabase();
         }
 
         private JwtSecurityToken ToToken(string accessToken)

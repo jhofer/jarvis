@@ -1,15 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using System.Net.Http;
-using System.Net;
 using System.Text.Json;
 using StackExchange.Redis;
-using System.Text.Json.Serialization;
 using jarvis.ApiService.Cache;
+using jarvis.ApiService.Integrations.IntegrationTokenProvider;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.JsonWebTokens;
+using System.IdentityModel.Tokens.Jwt;
+using Azure.Core;
 
 
-namespace jarvis.ApiService.Integrations
+namespace jarvis.ApiService.Integrations.Registration
 {
 
 
@@ -25,33 +25,27 @@ namespace jarvis.ApiService.Integrations
 
 
     [ApiController]
-    [Route("[controller]")]
-    public class IntegrationsController : ControllerBase
+    [Route("integrations")]
+    public class AddIntegrationsController(ILogger<AddIntegrationsController> logger, IConfiguration configuration, IHttpClientFactory httpClientFactory, IConnectionMultiplexer connectionMux, IIntegrationRepository integrationRepository) : ControllerBase
     {
 
-        private readonly ILogger<IntegrationsController> logger;
-        private readonly IConfiguration configuration;
-        private readonly IHttpClientFactory httpClientFactory;
-        private readonly IConnectionMultiplexer connectionMultiplexer;
-        private readonly IDatabase cache;
-        private readonly IIntegrationRepository integrationRepository;
+        private readonly IDatabase cache = connectionMux.GetDatabase();
 
-        public IntegrationsController(ILogger<IntegrationsController> logger, IConfiguration configuration, IHttpClientFactory httpClienFactory, IConnectionMultiplexer connectionMux, IIntegrationRepository integrationRepository)
-        {
-            this.logger = logger;
-            this.configuration = configuration;
-            this.httpClientFactory = httpClienFactory;
-            this.connectionMultiplexer = connectionMux;
-            this.cache = connectionMultiplexer.GetDatabase();
-            this.integrationRepository = integrationRepository;
-        }
 
         [HttpGet("GenerateAuthLink")]
+        [Authorize]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
-        public RedirectResult GenerateAuthLink([FromHeader] string referer, [FromQuery] string userEmail)
+        public RedirectResult GenerateAuthLink([FromQuery] string referer)
         {
+            var request = HttpContext.Request;
+            /* var bearer = authorization.Split("Bearer ").First();
+             var handler = new JwtSecurityTokenHandler();
+             var token = handler.ReadJwtToken(bearer);*/
+            var userId = User?.Identity?.Name ?? throw new Exception("No User Context");
+
+            // logger.LogInformation(JsonSerializer.Serialize(request));
             var sessionId = Guid.NewGuid().ToString();
-            string? clientId = this.configuration["CLIENT_ID"];
+            string? clientId = configuration["CLIENT_ID"];
             if (clientId is null) throw new ArgumentNullException("Config CLIENT_ID is null");
 
             var codeVerifier = PkceHelper.GenerateCodeVerifier();
@@ -64,10 +58,10 @@ namespace jarvis.ApiService.Integrations
                 CodeVerifier: codeVerifier,
                 CodeChallange: codeChallenge,
                 Referer: referer,
-                UserId: userEmail
+                UserId: userId
             );
 
-            this.cache.SetObject(sessionId, integrationRequest);
+            cache.SetObject(sessionId, integrationRequest);
 
             string redirectUri = GetRedirectUri(sessionId);
 
@@ -119,11 +113,11 @@ namespace jarvis.ApiService.Integrations
 
             var httpClient = httpClientFactory.CreateClient("tokenEndpoint");
 
-            string clientId = this.configuration["CLIENT_ID"];
-            string clientSecret = this.configuration["CLIENT_SECRET"];
+            string clientId = configuration["CLIENT_ID"];
+            string clientSecret = configuration["CLIENT_SECRET"];
             var tokenEndpoint = "https://login.microsoftonline.com/common/oauth2/v2.0/token";
 
-            var request = this.cache.ObjectGetDelete<IntegrationRequest>(sessionId);
+            var request = cache.ObjectGetDelete<IntegrationRequest>(sessionId);
 
             var codeVerifier = request.CodeVerifier;
             var requestData = new FormUrlEncodedContent(new[]
@@ -154,10 +148,11 @@ namespace jarvis.ApiService.Integrations
 
                 integrationRepository.Save(integration);
 
-                var rediretResult = new RedirectResult(url: request.Referer + "/Integrations", permanent: true,
+                var rediretResult = new RedirectResult(url: request.Referer, permanent: true,
                            preserveMethod: true);
 
                 return rediretResult;
+                //return new OkObjectResult("you now can move back to " + request.Referer + "/Integrations");
 
             }
             else
@@ -167,18 +162,5 @@ namespace jarvis.ApiService.Integrations
             }
 
         }
-
-        [HttpGet("/")]
-        [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
-        public async Task<ActionResult> GetIntegrations()
-        {
-            var integerations = integrationRepository.GetIntegrations(request)
-
-        }
-
-
-
-
     }
-
 }
