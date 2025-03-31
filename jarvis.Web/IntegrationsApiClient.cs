@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Azure.Core;
 using Microsoft.Identity.Web;
 using System.Security.Claims;
+using jarvis.DTOs;
 namespace jarvis.Web;
 
 public class IntegrationsApiClient
@@ -79,14 +80,20 @@ public class IntegrationsApiClient
         var ctx = httpContext.HttpContext! ?? throw new Exception("Http context not available");
 
         var id = ctx.User?.Identity ?? throw new Exception("User context not available");
-        var userEmail =id.Name;
+        var userEmail = id.Name;
         var apiUrl = config["apiService"];
-      
+
         var request = ctx.Request;
         var referer = request.Headers.Referer;
         var url = $"{apiUrl}/Integrations/GenerateAuthLink?referer={referer}";
         return url;
 
+    }
+
+    public async Task<IntegrationDTO[]> GetIntegrations()
+    {
+        var dtos = await this.Get<IEnumerable<IntegrationDTO>>("/integrations");
+        return dtos.ToArray();
     }
 }
 

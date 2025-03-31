@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jarvis.Tests", "jarvis.Test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDFRenamerIsolated", "pdfrenamer\PDFRenamerIsolated.csproj", "{87B4AD4A-E46C-4F55-9F71-9DC4751E76F3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "jarvis.DTOs", "jarvis.DTOs\jarvis.DTOs.csproj", "{A1E47459-232F-4498-9FE0-6F2896E47C25}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,6 +46,10 @@ Global
 		{87B4AD4A-E46C-4F55-9F71-9DC4751E76F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{87B4AD4A-E46C-4F55-9F71-9DC4751E76F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{87B4AD4A-E46C-4F55-9F71-9DC4751E76F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1E47459-232F-4498-9FE0-6F2896E47C25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1E47459-232F-4498-9FE0-6F2896E47C25}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1E47459-232F-4498-9FE0-6F2896E47C25}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1E47459-232F-4498-9FE0-6F2896E47C25}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

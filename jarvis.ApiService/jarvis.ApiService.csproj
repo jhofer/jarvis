@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\jarvis.DTOs\jarvis.DTOs.csproj" />
     <ProjectReference Include="..\jarvis.ServiceDefaults\jarvis.ServiceDefaults.csproj" />
   </ItemGroup>
 

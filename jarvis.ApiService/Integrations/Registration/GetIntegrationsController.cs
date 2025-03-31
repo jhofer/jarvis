@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using StackExchange.Redis;
 using Microsoft.AspNetCore.Authorization;
+using jarvis.DTOs;
 
 
 namespace jarvis.ApiService.Integrations.Registration
@@ -17,6 +18,12 @@ namespace jarvis.ApiService.Integrations.Registration
         {
 
             var integerations = integrationRepository.GetIntegrations(User.Identity.ToString());
+
+            var dtos = integerations.Select(integration => new IntegrationDTO()
+            {
+                Name = integration.IntegrationName,
+                RefreshToken = integration.RefreshToken,
+            });
             return Ok(integerations);
         }
     }

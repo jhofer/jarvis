@@ -6,6 +6,7 @@
 @using Microsoft.AspNetCore.Authentication.Cookies
 @using Microsoft.AspNetCore.Authentication.OpenIdConnect
 @using Microsoft.Identity.Web
+@using jarvis.DTOs
 @inject Microsoft.AspNetCore.Authentication.IAuthenticationService AuthenticationService
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @inject IntegrationsApiClient IntegrationsApi
@@ -13,12 +14,32 @@
 @if (HttpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false)
 {
     <PageTitle>Integrations</PageTitle>
-    @HttpContextAccessor.HttpContext?.User?.GetDisplayName();
+    @HttpContextAccessor.HttpContext?.User?.GetDisplayName()
+    ;
     <h1>Integrations</h1>
 
     <p role="status">AuthLink @authLink</p>
 
     <a class="btn btn-primary" href="@authLink">Add OneDriveIntegration</a>
+    <table class="table">
+        <thead>
+            <tr>
+              
+                <th>Name</th>
+                <th>Refresh Token</th>
+             
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var integration in integrations)
+            {
+                <tr>
+                    <td>@integration.Name</td>
+                    <td>@integration.RefreshToken</td>
+                </tr>
+            }
+        </tbody>
+    </table>
 
 }
 else
@@ -28,13 +49,16 @@ else
 
 
 @code {
-
+    private IntegrationDTO[] integrations = Array.Empty<IntegrationDTO>();
     private string authLink = "";
 
-    protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
         authLink = IntegrationsApi.GenerateAuthLink();
-        return Task.CompletedTask;
+        integrations = await IntegrationsApi.GetIntegrations();
+
     }
+
+
 }
 
