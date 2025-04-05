@@ -54,6 +54,11 @@ public class IntegrationsApiClient
         var accessToken = await httpContext.HttpContext?
             .GetTokenAsync("access_token");
 
+        if (string.IsNullOrEmpty(accessToken))
+        {
+            throw new InvalidOperationException("Access token is not available. Please ensure you are authenticated.");
+        }
+
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
     }
 
@@ -62,11 +67,19 @@ public class IntegrationsApiClient
         var responseBody = await result.Content.ReadAsStringAsync();
         if (result.IsSuccessStatusCode)
         {
-            var obj = JsonSerializer.Deserialize<T>(responseBody, new JsonSerializerOptions
+            try
             {
-                PropertyNameCaseInsensitive = true
-            });
-            return obj;
+                var obj = JsonSerializer.Deserialize<T>(responseBody, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+                return obj;
+            }
+            catch (Exception e)
+            {
+                throw new HttpRequestException($"Request to deserialize: {responseBody}");
+
+            }
 
         }
         else

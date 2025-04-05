@@ -24,7 +24,7 @@ namespace jarvis.ApiService.Integrations.Registration
                 Name = integration.IntegrationName,
                 RefreshToken = integration.RefreshToken,
             });
-            return Ok(integerations);
+            return Ok(dtos);
         }
     }
 
