@@ -27,13 +27,51 @@ var openai = builder.ExecutionContext.IsPublishMode
 var apiService = builder.AddProject<Projects.jarvis_ApiService>("apiservice")
     .WithReference(tables).WaitFor(tables).WithReference(openai).WithReference(cache).WaitFor(cache);
 
-var webfrontend = builder.AddProject<Projects.jarvis_Web>("webfrontend")
+/*var webfrontend = builder.AddProject<Projects.jarvis_Web>("webfrontend")
     .WithExternalHttpEndpoints()
     .WithReference(cache)
     .WaitFor(cache)
     .WithReference(apiService)
     .WaitFor(apiService)
-    .WithEnvironment("apiService", apiService.GetEndpoint("https"));
+    .WithEnvironment("apiService", apiService.GetEndpoint("https"));*/
+
+//apiService.WithEnvironment("webFrontend", webfrontend.GetEndpoint("https+http"));
+
+
+
+//apiService.WithEnvironment("webFrontend", webfrontend.GetEndpoint("https+http"));
+/*
+builder.AddProject<Projects.BlazorApp>("blazorapp").WithExternalHttpEndpoints()
+    .WithReference(cache)
+    .WaitFor(cache)
+    .WithReference(apiService)
+    .WaitFor(apiService)
+    .WithEnvironment("apiService", apiService.GetEndpoint("https")); ;*/
+
+//apiService.WithEnvironment("webFrontend", webfrontend.GetEndpoint("https+http"));
+
+
+
+//apiService.WithEnvironment("webFrontend", webfrontend.GetEndpoint("https+http"));
+
+builder.AddProject<Projects.Frontend>("frontend").WithExternalHttpEndpoints()
+    .WithReference(cache)
+    .WaitFor(cache)
+    .WithReference(apiService)
+    .WaitFor(apiService)
+    .WithEnvironment("apiService", apiService.GetEndpoint("https")); ;
+
+//apiService.WithEnvironment("webFrontend", webfrontend.GetEndpoint("https+http"));
+
+
+
+//apiService.WithEnvironment("webFrontend", webfrontend.GetEndpoint("https+http"));
+
+builder.AddProject<Projects.BlazorFrontend>("blazorfrontend");
+
+//apiService.WithEnvironment("webFrontend", webfrontend.GetEndpoint("https+http"));
+
+
 
 //apiService.WithEnvironment("webFrontend", webfrontend.GetEndpoint("https+http"));
 

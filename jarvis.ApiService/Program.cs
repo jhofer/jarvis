@@ -1,5 +1,6 @@
 using jarvis.ApiService;
 using jarvis.ApiService.Integrations;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Identity.Web;
@@ -19,8 +20,8 @@ builder.Services.AddControllers();
 builder.AddRedisClient(connectionName: "cache");
 builder.Services.AddAppServices();
 
-builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-       .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"));
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+       .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
 
 
 /*builder

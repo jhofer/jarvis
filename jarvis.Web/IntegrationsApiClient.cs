@@ -18,13 +18,16 @@ public class IntegrationsApiClient
     private HttpClient client;
     private IConfiguration config;
     private IHttpContextAccessor httpContext;
+    private ITokenAcquisition tokenAcquisition;
 
-    public IntegrationsApiClient(IConfiguration config, HttpClient client, IHttpContextAccessor context)
+    public IntegrationsApiClient(IConfiguration config, HttpClient client, IHttpContextAccessor context, ITokenAcquisition tokenAcquisition)
+
     {
         client.BaseAddress = new("https+http://apiservice");
         this.client = client;
         this.config = config;
         this.httpContext = context;
+        this.tokenAcquisition = tokenAcquisition;
     }
 
     public async Task<T> Get<T>(string url, CancellationToken cancellationToken = default)
@@ -51,8 +54,7 @@ public class IntegrationsApiClient
 
     private async Task AddToken(HttpRequestMessage request)
     {
-        var accessToken = await httpContext.HttpContext?
-            .GetTokenAsync("access_token");
+        var accessToken = await tokenAcquisition.GetAccessTokenForUserAsync(new[] { "api://0d6c8f5c-ba29-483e-9176-1f0bb9a50226/access_as_user" });
 
         if (string.IsNullOrEmpty(accessToken))
         {

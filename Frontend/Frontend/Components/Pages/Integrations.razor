@@ -1,0 +1,64 @@
+﻿@page "/integrations"
+
+
+@using Microsoft.AspNetCore.Authorization
+@using jarvis.DTOs
+@using BlazorApp.Clients
+
+@inject IntegrationsApiClient IntegrationsApi
+
+@attribute [Authorize]
+@rendermode InteractiveAuto
+
+<PageTitle>Auth</PageTitle>
+
+<h1>You are authenticated</h1>
+
+<PageTitle>Integrations</PageTitle>
+
+<h1>Integrations</h1>
+<AuthorizeView>
+    Hello @context.User.Identity?.Name!
+    <p role="status">AuthLink @authLink</p>
+
+    <a class="btn btn-primary" href="@authLink">Add OneDriveIntegration</a>
+    <table class="table">
+        <thead>
+            <tr>
+
+                <th>Name</th>
+                <th>Refresh Token</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var integration in integrations)
+            {
+                <tr>
+                    <td>@integration.Name</td>
+                    <td>@integration.RefreshToken</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</AuthorizeView>
+
+
+
+
+
+
+@code {
+    private IntegrationDTO[] integrations = Array.Empty<IntegrationDTO>();
+    private string authLink = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        authLink = IntegrationsApi.GenerateAuthLink();
+        integrations = await IntegrationsApi.GetIntegrations();
+
+    }
+
+
+}
+

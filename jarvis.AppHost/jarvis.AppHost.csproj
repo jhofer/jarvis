@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <Sdk Name="Aspire.AppHost.Sdk" Version="9.0.0" />
 
@@ -12,6 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BlazorFrontend\BlazorFrontend\BlazorFrontend.csproj" />
     <ProjectReference Include="..\jarvis.ApiService\jarvis.ApiService.csproj" />
     <ProjectReference Include="..\jarvis.Web\jarvis.Web.csproj" />
   </ItemGroup>
