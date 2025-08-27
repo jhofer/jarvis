@@ -15,6 +15,7 @@
     <ProjectReference Include="..\BlazorFrontend\BlazorFrontend\BlazorFrontend.csproj" />
     <ProjectReference Include="..\jarvis.ApiService\jarvis.ApiService.csproj" />
     <ProjectReference Include="..\jarvis.Web\jarvis.Web.csproj" />
+    <ProjectReference Include="..\WasmFrontend\WasmFrontend\WasmFrontend.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -54,7 +54,7 @@ builder.AddProject<Projects.BlazorApp>("blazorapp").WithExternalHttpEndpoints()
 
 //apiService.WithEnvironment("webFrontend", webfrontend.GetEndpoint("https+http"));
 
-builder.AddProject<Projects.Frontend>("frontend").WithExternalHttpEndpoints()
+builder.AddProject<Projects.BlazorFrontend>("blazorfrontend").WithExternalHttpEndpoints()
     .WithReference(cache)
     .WaitFor(cache)
     .WithReference(apiService)
@@ -67,7 +67,23 @@ builder.AddProject<Projects.Frontend>("frontend").WithExternalHttpEndpoints()
 
 //apiService.WithEnvironment("webFrontend", webfrontend.GetEndpoint("https+http"));
 
-builder.AddProject<Projects.BlazorFrontend>("blazorfrontend");
+
+
+//apiService.WithEnvironment("webFrontend", webfrontend.GetEndpoint("https+http"));
+
+
+
+//apiService.WithEnvironment("webFrontend", webfrontend.GetEndpoint("https+http"));
+
+builder.AddProject<Projects.WasmFrontend>("wasmfrontend");
+
+//apiService.WithEnvironment("webFrontend", webfrontend.GetEndpoint("https+http"));
+
+
+
+//apiService.WithEnvironment("webFrontend", webfrontend.GetEndpoint("https+http"));
+
+
 
 //apiService.WithEnvironment("webFrontend", webfrontend.GetEndpoint("https+http"));
 

@@ -7,7 +7,7 @@ namespace BlazorAzureADWithApis.Server.Controllers;
 
 [Authorize(Policy = "ValidateAccessTokenPolicy",
     AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-[AuthorizeForScopes(Scopes = new string[] { "api://2b50a014-f353-4c10-aace-024f19a55569/access_as_user" })]
+[AuthorizeForScopes(Scopes = new string[] { "api://0d6c8f5c-ba29-483e-9176-1f0bb9a50226/access_as_user" })]
 [ApiController]
 [Route("[controller]")]
 public class DirectApiController : ControllerBase
