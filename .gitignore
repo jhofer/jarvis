@@ -148,3 +148,4 @@ node_modules/
 
 **/local.settings.json
 **/appsettings.Development.json
+.env.local.secrets

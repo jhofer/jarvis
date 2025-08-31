@@ -23,5 +23,8 @@ EXPOSE 3000
 ENV NODE_ENV=production
 ENV PORT=3000
 
+# Set default NextAuth URL (will be overridden by environment variables)
+ENV NEXTAUTH_URL=http://localhost:3000
+
 # Start the app in production mode
 CMD ["npm", "start"]

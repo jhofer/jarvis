@@ -3,19 +3,24 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "dotenv -e .env.local -e .env.local.secrets -- next dev --turbopack",
+    "dev:no-secrets": "next dev --turbopack",
     "build": "next build --turbopack",
-    "start": "next start -p $PORT"
+    "start": "next start -p $PORT",
+    "load-secrets": "pwsh -ExecutionPolicy Bypass -File ./load-secrets.ps1"
   },
   "dependencies": {
+    "@auth/core": "^0.34.2",
+    "next": "15.5.2",
+    "next-auth": "^4.24.11",
     "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "next": "15.5.2"
+    "react-dom": "19.1.0"
   },
   "devDependencies": {
-    "typescript": "^5",
     "@types/node": "^20",
     "@types/react": "^19",
-    "@types/react-dom": "^19"
+    "@types/react-dom": "^19",
+    "dotenv-cli": "^10.0.0",
+    "typescript": "^5"
   }
 }
