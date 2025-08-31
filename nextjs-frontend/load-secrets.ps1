@@ -3,7 +3,7 @@
 
 Write-Host "Loading secrets from Azure Key Vault for local development..." -ForegroundColor Green
 
-$vaultName = "secrets-3kktkazybj2b2"
+$vaultName = "secrets-axzhierknxnkk"
 
 # Get secrets from Key Vault
 Write-Host "Retrieving AZURE_AD_CLIENT_SECRET..." -ForegroundColor Yellow
